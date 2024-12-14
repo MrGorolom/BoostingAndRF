@@ -73,12 +73,10 @@ def whether_to_stop(convergence_history: ConvergenceHistory, patience: int) -> b
         If neither 'train' nor 'val' key is present in the convergence_history.
     """
     try:
-        if 'val' in convergence_history:
-            val_loss = convergence_history['val']
-            has_improved = len(val_loss) - np.argmin(val_loss) <= patience
-        else:
-            train_loss = convergence_history['train']
-            has_improved = len(train_loss) - np.argmin(train_loss) <= patience
+        val_loss = convergence_history['val']
+        has_improved = len(val_loss) - np.argmin(val_loss) <= patience
         return not has_improved
     except KeyError:
-        print("Поле отсутствует в словаре convergence_history")
+        train_loss = convergence_history['train']
+        has_improved = len(train_loss) - np.argmin(train_loss) <= patience
+        return not has_improved

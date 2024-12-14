@@ -7,7 +7,7 @@ import numpy as np
 import numpy.typing as npt
 from sklearn.tree import DecisionTreeRegressor
 
-from .utils import ConvergenceHistory
+from .utils import ConvergenceHistory, rmsle, whether_to_stop
 
 
 class GradientBoostingMSE:
@@ -39,6 +39,9 @@ class GradientBoostingMSE:
             DecisionTreeRegressor(**tree_params) for _ in range(n_estimators)
         ]
 
+    def _compute_loss(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
+        return np.mean((y_true - y_pred) ** 2)
+
     def fit(
         self,
         X: npt.NDArray[np.float64],
@@ -62,21 +65,19 @@ class GradientBoostingMSE:
         Returns:
             ConvergenceHistory | None: Instance of `ConvergenceHistory` if `trace=True` or if validation data is provided.
         """
-        history = ConvergenceHistory() if trace or (X_val is not None and y_val is not None) else None
-        self.init_prediction = np.mean(y)
+        if trace or (X_val is not None and y_val is not None):
+            history = ConvergenceHistory()
+        else:
+            history = None
+
+        self.init_prediction = 0
         y_pred = np.full(y.shape, self.init_prediction)
-
-        if X_val is not None:
-            val_pred = np.full(y_val.shape, self.init_prediction)
-
-        best_loss = float('inf')
-        no_improve_count = 0
+        if X_val is not None and y_val is not None:
+            val_pred = np.full(y.shape, self.init_prediction)
 
         for i in range(self.n_estimators):
-            # Compute residuals (negative gradient of MSE loss)
+            # New tree
             residuals = y - y_pred
-
-            # Fit a new tree to the residuals
             tree = DecisionTreeRegressor(max_depth=self.max_depth)
             tree.fit(X, residuals)
             self.trees.append(tree)
@@ -85,41 +86,22 @@ class GradientBoostingMSE:
             update = self.learning_rate * tree.predict(X)
             y_pred += update
 
-            # Compute and store training loss
+            # Compute training loss
             if history is not None:
-                train_loss = self._compute_loss(y, y_pred)
+                train_loss = np.mean((y - y_pred) ** 2)
                 history['train'].append(train_loss)
 
-            # Compute validation loss if validation data is provided
+            # Compute validation loss
             if X_val is not None and y_val is not None:
                 val_update = self.learning_rate * tree.predict(X_val)
                 val_pred += val_update
-                val_loss = self._compute_loss(y_val, val_pred)
+                val_loss = np.mean((y_val - val_pred) ** 2)
                 history['val'].append(val_loss)
 
-                # Early stopping logic
-                if val_loss < best_loss:
-                    best_loss = val_loss
-                    no_improve_count = 0
-                else:
-                    no_improve_count += 1
-
-                if patience is not None and no_improve_count >= patience:
-                    print(f"Early stopping at iteration {i} with validation loss: {val_loss}")
-                    break
-
-            if trace:
-                print(
-                    f"Iteration {i}: Train Loss = {train_loss}, Validation Loss = {val_loss if X_val is not None else 'N/A'}")
+            if whether_to_stop(history, patience):
+                break
 
         return history
-
-    def predict(self, X: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
-        """Make predictions with the trained model."""
-        y_pred = np.full(X.shape[0], self.init_prediction)
-        for tree in self.trees:
-            y_pred += self.learning_rate * tree.predict(X)
-        return y_pred
 
     def predict(self, X: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
         """
@@ -133,8 +115,10 @@ class GradientBoostingMSE:
         Returns:
             npt.NDArray[np.float64]: Predicted values, array of shape (n_objects,).
         """
-        
-        ...
+        y_pred = np.full(X.shape[0], self.init_prediction)
+        for tree in self.trees:
+            y_pred += self.learning_rate * tree.predict(X)
+        return y_pred
 
     def dump(self, dirpath: str) -> None:
         """

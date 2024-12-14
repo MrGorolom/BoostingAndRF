@@ -62,8 +62,64 @@ class GradientBoostingMSE:
         Returns:
             ConvergenceHistory | None: Instance of `ConvergenceHistory` if `trace=True` or if validation data is provided.
         """
-        
-        ...
+        history = ConvergenceHistory() if trace or (X_val is not None and y_val is not None) else None
+        self.init_prediction = np.mean(y)
+        y_pred = np.full(y.shape, self.init_prediction)
+
+        if X_val is not None:
+            val_pred = np.full(y_val.shape, self.init_prediction)
+
+        best_loss = float('inf')
+        no_improve_count = 0
+
+        for i in range(self.n_estimators):
+            # Compute residuals (negative gradient of MSE loss)
+            residuals = y - y_pred
+
+            # Fit a new tree to the residuals
+            tree = DecisionTreeRegressor(max_depth=self.max_depth)
+            tree.fit(X, residuals)
+            self.trees.append(tree)
+
+            # Update predictions
+            update = self.learning_rate * tree.predict(X)
+            y_pred += update
+
+            # Compute and store training loss
+            if history is not None:
+                train_loss = self._compute_loss(y, y_pred)
+                history['train'].append(train_loss)
+
+            # Compute validation loss if validation data is provided
+            if X_val is not None and y_val is not None:
+                val_update = self.learning_rate * tree.predict(X_val)
+                val_pred += val_update
+                val_loss = self._compute_loss(y_val, val_pred)
+                history['val'].append(val_loss)
+
+                # Early stopping logic
+                if val_loss < best_loss:
+                    best_loss = val_loss
+                    no_improve_count = 0
+                else:
+                    no_improve_count += 1
+
+                if patience is not None and no_improve_count >= patience:
+                    print(f"Early stopping at iteration {i} with validation loss: {val_loss}")
+                    break
+
+            if trace:
+                print(
+                    f"Iteration {i}: Train Loss = {train_loss}, Validation Loss = {val_loss if X_val is not None else 'N/A'}")
+
+        return history
+
+    def predict(self, X: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
+        """Make predictions with the trained model."""
+        y_pred = np.full(X.shape[0], self.init_prediction)
+        for tree in self.trees:
+            y_pred += self.learning_rate * tree.predict(X)
+        return y_pred
 
     def predict(self, X: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
         """

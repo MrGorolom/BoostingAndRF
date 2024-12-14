@@ -7,7 +7,8 @@ import numpy as np
 import numpy.typing as npt
 from sklearn.tree import DecisionTreeRegressor
 
-from .utils import ConvergenceHistory
+from utils import ConvergenceHistory
+from utils import whether_to_stop
 
 
 class GradientBoostingMSE:
@@ -39,6 +40,7 @@ class GradientBoostingMSE:
             DecisionTreeRegressor(**tree_params) for _ in range(n_estimators)
         ]
 
+
     def fit(
         self,
         X: npt.NDArray[np.float64],
@@ -62,8 +64,66 @@ class GradientBoostingMSE:
         Returns:
             ConvergenceHistory | None: Instance of `ConvergenceHistory` if `trace=True` or if validation data is provided.
         """
-        
-        ...
+        if trace or (X_val is not None and y_val is not None):
+            history = ConvergenceHistory(train=[])
+        else:
+            history = None
+
+        self.init_prediction = 0
+        y_pred = np.full(y.shape, self.init_prediction, dtype=np.float64)
+        if X_val is not None and y_val is not None:
+            val_pred = np.full(y.shape, self.init_prediction, dtype=np.float64)
+        if patience is None:
+            patience = self.n_estimators
+
+        best_loss = np.float64('inf')
+        count_after_best = 0
+        for i in range(self.n_estimators):
+            # Fitting new tree
+            residuals = y - y_pred
+            self.forest[i].fit(X, residuals)
+
+            # Update predictions
+            update = self.learning_rate * self.forest[i].predict(X)
+            y_pred += update
+
+            # Compute training loss
+            if history is not None:
+                train_loss = np.mean((y - y_pred) ** 2)
+                history['train'].append(train_loss)
+
+            # Compute validation loss
+            if X_val is not None and y_val is not None:
+                val_update = self.learning_rate * self.forest[i].predict(X_val)
+                val_pred += val_update
+                val_loss = np.mean((y_val - val_pred) ** 2)
+                history['val'].append(val_loss)
+
+            if history is not None and whether_to_stop(history, patience):
+                break
+            elif history is None:
+                if X_val is not None and y_val is not None:
+                    val_update = self.learning_rate * self.forest[i].predict(X_val)
+                    val_pred += val_update
+                    val_loss = np.mean((y_val - val_pred) ** 2)
+                    if val_loss < best_loss:
+                        best_loss = val_loss
+                        count_after_best = 0
+                    else:
+                        count_after_best += 1
+                        if count_after_best > patience:
+                            break
+                else:
+                    train_loss = np.mean((y - y_pred) ** 2)
+                    if train_loss < best_loss:
+                        best_loss = train_loss
+                        count_after_best = 0
+                    else:
+                        count_after_best += 1
+                        if count_after_best > patience:
+                            break
+
+        return history
 
     def predict(self, X: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
         """
@@ -77,8 +137,10 @@ class GradientBoostingMSE:
         Returns:
             npt.NDArray[np.float64]: Predicted values, array of shape (n_objects,).
         """
-        
-        ...
+        y_pred = np.full(X.shape[0], self.init_prediction, dtype=np.float64)
+        for tree in self.forest:
+            y_pred += self.learning_rate * tree.predict(X)
+        return y_pred
 
     def dump(self, dirpath: str) -> None:
         """

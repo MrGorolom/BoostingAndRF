@@ -53,8 +53,46 @@ class RandomForestMSE:
         Returns:
             ConvergenceHistory | None: Instance of `ConvergenceHistory` if `trace=True` or if validation data is provided.
         """
-        
-        ...
+        best_val_loss = float('inf')
+        best_epoch = 0
+
+        for epoch in range(self.n_estimators):
+            # Fit each tree in the forest
+            for tree in self.forest:
+                tree.fit(X, y)
+
+            # Predict on training and validation sets
+            y_train_pred = self.predict(X)
+            y_val_pred = self.predict(X_val) if X_val is not None else None
+
+            # Calculate MSE
+            train_loss = np.mean((y_train_pred - y) ** 2)
+            val_loss = np.mean((y_val_pred - y_val) ** 2) if X_val is not None else None
+
+            # Update losses history
+            self.train_losses.append(train_loss)
+            self.val_losses.append(val_loss)
+
+            # Check for early stopping
+            if patience is not None and epoch > patience:
+                break
+
+            # Check if validation loss improved
+            if X_val is not None and val_loss < best_val_loss:
+                best_val_loss = val_loss
+                best_epoch = epoch
+            elif patience is not None and epoch > best_epoch + patience:
+                break
+
+            # Print progress every 10 epochs
+            if (epoch + 1) % 10 == 0:
+                print(f"Epoch {epoch + 1}/{self.n_estimators}: Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}")
+
+            # Optionally, return losses if tracing is enabled
+            if trace is True or X_val is not None:
+                return self.train_losses, self.val_losses
+
+        return None
 
     def predict(self, X: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
         """

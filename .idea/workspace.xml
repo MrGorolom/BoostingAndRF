@@ -5,15 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5ffefb62-0d16-41be-b2d9-aed0057b0207" name="Changes" comment="Almost done, testing needed">
-      <change afterPath="$PROJECT_DIR$/ensembles/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/BoostingAndRF.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/BoostingAndRF.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/ensembles/testGBDT.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/boosting.py" beforeDir="false" afterPath="$PROJECT_DIR$/ensembles/boosting.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/random_forest.py" beforeDir="false" afterPath="$PROJECT_DIR$/ensembles/random_forest.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/ensembles/utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ensembles/random_forest.py" beforeDir="false" afterPath="$PROJECT_DIR$/ensembles/random_forest.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -47,9 +40,9 @@
     &quot;accountId&quot;: &quot;93d850cf-53b0-45f6-84bc-a5e28d021cc3&quot;
   }
 }</component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 1
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 1
+}</component>
   <component name="ProjectId" id="2qA5gEspw8ohcA105Xl86qbV0Nx" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <ConfirmationsSetting value="2" id="Add" />
@@ -63,7 +56,7 @@
     "Python.boosting.executor": "Run",
     "Python.myenv.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "GradientBoosting",
+    "git-widget-placeholder": "RandomForest",
     "last_opened_file_path": "/home/mrgorolom/BoostingAndRF/myenv",
     "settings.editor.selected.configurable": "terminal"
   }
@@ -73,7 +66,7 @@
       <recent name="$PROJECT_DIR$/ensembles" />
     </key>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Compound.Unnamed">
     <configuration name="Unnamed" type="CompoundRunConfigurationType">
       <method v="2" />
     </configuration>
@@ -155,7 +148,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-98f27166c754-ba05f1cad1b1-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-242.21829.153" />
+        <option value="bundled-python-sdk-0e3be3396995-c546a90a8094-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-242.23339.19" />
       </set>
     </attachedChunks>
   </component>

@@ -53,46 +53,27 @@ class RandomForestMSE:
         Returns:
             ConvergenceHistory | None: Instance of `ConvergenceHistory` if `trace=True` or if validation data is provided.
         """
-        best_val_loss = float('inf')
-        best_epoch = 0
-
+        if trace is None:
+            trace = X_val is not None and y_val is not None
+        convergence_history = ConvergenceHistory(train=[], val=[] if X_val is not None else None)
+        n_objects = X.shape[0]
+        indices = np.arange(n_objects)
         for epoch in range(self.n_estimators):
-            # Fit each tree in the forest
             for tree in self.forest:
-                tree.fit(X, y)
-
-            # Predict on training and validation sets
-            y_train_pred = self.predict(X)
-            y_val_pred = self.predict(X_val) if X_val is not None else None
-
-            # Calculate MSE
-            train_loss = np.mean((y_train_pred - y) ** 2)
-            val_loss = np.mean((y_val_pred - y_val) ** 2) if X_val is not None else None
-
-            # Update losses history
-            self.train_losses.append(train_loss)
-            self.val_losses.append(val_loss)
-
-            # Check for early stopping
-            if patience is not None and epoch > patience:
-                break
-
-            # Check if validation loss improved
-            if X_val is not None and val_loss < best_val_loss:
-                best_val_loss = val_loss
-                best_epoch = epoch
-            elif patience is not None and epoch > best_epoch + patience:
-                break
-
-            # Print progress every 10 epochs
-            if (epoch + 1) % 10 == 0:
-                print(f"Epoch {epoch + 1}/{self.n_estimators}: Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}")
-
-            # Optionally, return losses if tracing is enabled
-            if trace is True or X_val is not None:
-                return self.train_losses, self.val_losses
-
-        return None
+                bootstrap_indices = np.random.choice(indices, size=n_objects, replace=True)
+                X_bootstrap, y_bootstrap = X[bootstrap_indices], y[bootstrap_indices]
+                tree.fit(X_bootstrap, y_bootstrap)
+            if trace:
+                train_predictions = self.predict(X)
+                train_loss = rmsle(y, train_predictions)
+                convergence_history['train'].append(train_loss)
+                if X_val is not None and y_val is not None:
+                    val_predictions = self.predict(X_val)
+                    val_loss = rmsle(y_val, val_predictions)
+                    convergence_history['val'].append(val_loss)
+                if patience is not None and whether_to_stop(convergence_history, patience):
+                    return convergence_history
+        return convergence_history if trace else None
 
     def predict(self, X: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
         """
@@ -106,8 +87,8 @@ class RandomForestMSE:
         Returns:
             npt.NDArray[np.float64]: Predicted values, array of shape (n_objects,).
         """
-        
-        ...
+        predictions = np.array([tree.predict(X) for tree in self.forest])
+        return np.mean(predictions, axis=0)
 
     def dump(self, dirpath: str) -> None:
         """

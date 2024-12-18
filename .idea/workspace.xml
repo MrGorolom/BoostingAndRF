@@ -4,9 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5ffefb62-0d16-41be-b2d9-aed0057b0207" name="Changes" comment="Work plan ready">
+    <list default="true" id="5ffefb62-0d16-41be-b2d9-aed0057b0207" name="Changes" comment="ended random forest, test needed">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ensembles/random_forest.py" beforeDir="false" afterPath="$PROJECT_DIR$/ensembles/random_forest.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ensembles/testGBDT.py" beforeDir="false" afterPath="$PROJECT_DIR$/ensembles/testGBDT.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -88,7 +90,15 @@
       <option name="project" value="LOCAL" />
       <updated>1734098192229</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="ended random forest, test needed">
+      <option name="closed" value="true" />
+      <created>1734547549720</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1734547549720</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -117,6 +127,7 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="First commit - my own project. Help me" />
     <MESSAGE value="Work plan ready" />
-    <option name="LAST_COMMIT_MESSAGE" value="Work plan ready" />
+    <MESSAGE value="ended random forest, test needed" />
+    <option name="LAST_COMMIT_MESSAGE" value="ended random forest, test needed" />
   </component>
 </project>

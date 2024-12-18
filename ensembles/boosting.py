@@ -8,7 +8,7 @@ import numpy.typing as npt
 from sklearn.tree import DecisionTreeRegressor
 
 from utils import ConvergenceHistory
-from utils import whether_to_stop
+from utils import whether_to_stop, rmsle
 
 
 class GradientBoostingMSE:
@@ -89,14 +89,14 @@ class GradientBoostingMSE:
 
             # Compute training loss
             if history is not None:
-                train_loss = np.mean((y - y_pred) ** 2)
+                train_loss = rmsle(y, y_pred)
                 history['train'].append(train_loss)
 
             # Compute validation loss
             if X_val is not None and y_val is not None:
                 val_update = self.learning_rate * self.forest[i].predict(X_val)
                 val_pred += val_update
-                val_loss = np.mean((y_val - val_pred) ** 2)
+                val_loss = rmsle(y_val, val_pred)
                 history['val'].append(val_loss)
 
             if history is not None and whether_to_stop(history, patience):
@@ -105,7 +105,7 @@ class GradientBoostingMSE:
                 if X_val is not None and y_val is not None:
                     val_update = self.learning_rate * self.forest[i].predict(X_val)
                     val_pred += val_update
-                    val_loss = np.mean((y_val - val_pred) ** 2)
+                    val_loss = rmsle(y_val, val_pred)
                     if val_loss < best_loss:
                         best_loss = val_loss
                         count_after_best = 0
@@ -114,7 +114,7 @@ class GradientBoostingMSE:
                         if count_after_best > patience:
                             break
                 else:
-                    train_loss = np.mean((y - y_pred) ** 2)
+                    train_loss = rmsle(y, y_pred)
                     if train_loss < best_loss:
                         best_loss = train_loss
                         count_after_best = 0

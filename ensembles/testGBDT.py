@@ -38,7 +38,7 @@ rf_sklearn = RandomForestRegressor(
 # Train models
 history = gb_custom.fit(X_train, y_train, trace=True)
 gb_sklearn.fit(X_train, y_train)
-history_2 = rf_custom.fit(X_train, y_train, trace=True)
+rf_custom.fit(X_train, y_train, trace=True)
 rf_sklearn.fit(X_train, y_train)
 
 # Make predictions

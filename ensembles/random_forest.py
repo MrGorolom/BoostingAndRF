@@ -7,7 +7,7 @@ import numpy as np
 import numpy.typing as npt
 from sklearn.tree import DecisionTreeRegressor
 
-from .utils import ConvergenceHistory
+from utils import ConvergenceHistory, rmsle, whether_to_stop
 
 
 class RandomForestMSE:
@@ -53,8 +53,27 @@ class RandomForestMSE:
         Returns:
             ConvergenceHistory | None: Instance of `ConvergenceHistory` if `trace=True` or if validation data is provided.
         """
-        
-        ...
+        if trace is None:
+            trace = X_val is not None and y_val is not None
+        convergence_history = ConvergenceHistory(train=[], val=[] if X_val is not None else None)
+        n_objects = X.shape[0]
+        indices = np.arange(n_objects)
+        for epoch in range(self.n_estimators):
+            for tree in self.forest:
+                bootstrap_indices = np.random.choice(indices, size=n_objects, replace=True)
+                X_bootstrap, y_bootstrap = X[bootstrap_indices], y[bootstrap_indices]
+                tree.fit(X_bootstrap, y_bootstrap)
+            if trace:
+                train_predictions = self.predict(X)
+                train_loss = rmsle(y, train_predictions)
+                convergence_history['train'].append(train_loss)
+                if X_val is not None and y_val is not None:
+                    val_predictions = self.predict(X_val)
+                    val_loss = rmsle(y_val, val_predictions)
+                    convergence_history['val'].append(val_loss)
+                if patience is not None and whether_to_stop(convergence_history, patience):
+                    return convergence_history
+        return convergence_history if trace else None
 
     def predict(self, X: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
         """
@@ -68,8 +87,8 @@ class RandomForestMSE:
         Returns:
             npt.NDArray[np.float64]: Predicted values, array of shape (n_objects,).
         """
-        
-        ...
+        predictions = np.array([tree.predict(X) for tree in self.forest])
+        return np.mean(predictions, axis=0)
 
     def dump(self, dirpath: str) -> None:
         """
